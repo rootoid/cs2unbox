@@ -154,20 +154,27 @@ function showView(v){ views.forEach(x=>x.classList.add('hidden')); v.classList.r
     navInventory.classList.toggle('active',v===inventoryView); }
 navCases.onclick=()=>{ if(!isSpinning) showView(casesView); };
 navInventory.onclick=()=>{ if(!isSpinning){ showView(inventoryView); renderInventory(); } };
-let secretTapCount = 0;
-let secretTapTimer = null;
-logoHome.onclick=()=>{ 
-    if(!isSpinning) showView(casesView); 
-    // Secret Mobile Console Trigger: 7 fast taps on the logo
-    secretTapCount++;
-    clearTimeout(secretTapTimer);
-    if(secretTapCount >= 7) {
-        secretTapCount = 0;
-        toggleConsole();
-    } else {
-        secretTapTimer = setTimeout(() => { secretTapCount = 0; }, 1500);
-    }
-};
+logoHome.onclick=()=>{ if(!isSpinning) showView(casesView); };
+
+// Secret Mobile Console Trigger: Long press (2s) on the balance area
+let consolePressTimer;
+const balanceBtn = document.querySelector('.balance');
+if(balanceBtn) {
+    const startPress = (e) => {
+        consolePressTimer = setTimeout(() => {
+            toggleConsole();
+            if(navigator.vibrate) navigator.vibrate(50); // haptic feedback
+        }, 1500);
+    };
+    const cancelPress = () => clearTimeout(consolePressTimer);
+    
+    balanceBtn.addEventListener('touchstart', startPress);
+    balanceBtn.addEventListener('touchend', cancelPress);
+    balanceBtn.addEventListener('touchmove', cancelPress);
+    balanceBtn.addEventListener('mousedown', startPress);
+    balanceBtn.addEventListener('mouseup', cancelPress);
+    balanceBtn.addEventListener('mouseleave', cancelPress);
+}
 
 // ── Init ──
 async function init(){
@@ -316,7 +323,8 @@ function startUnbox(){ if(isSpinning) return;
     showView(unboxingView);
     const {item:winItem,tier:winTier,isRare}=rollItem(currentCase);
     const winnerWear=rollWear();
-    const COUNT=80, WIN_IDX=65, IW=200;
+    const COUNT=80, WIN_IDX=65;
+    const IW = window.innerWidth <= 768 ? 120 : 200;
     rouletteTrack.innerHTML=''; rouletteTrack.style.transition='none'; rouletteTrack.style.transform='translateX(0)';
     for(let i=0;i<COUNT;i++){ let item,wear,rare=false;
         if(i===WIN_IDX){ item=winItem; wear=winnerWear; rare=isRare; }
