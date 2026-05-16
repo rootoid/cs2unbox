@@ -16,11 +16,16 @@ import sys
 CRATES_URL = 'https://raw.githubusercontent.com/ByMykel/CSGO-API/main/public/api/en/crates.json'
 STEAM_PRICE_URL = 'https://steamcommunity.com/market/priceoverview/'
 CACHE_FILE = 'prices.json'
-DELAY = 1.8  # seconds between Steam API requests (stay under rate limit)
+DELAY = 4.0  # seconds between Steam API requests (stay under 20/min rate limit)
+CONSECUTIVE_429 = 0  # Global counter to abort if IP is blocked
 
-
-def fetch_steam_price(market_hash_name):
+def fetch_steam_price(market_hash_name, retries=0):
     """Fetch the lowest/median price for an item from Steam Market."""
+    global CONSECUTIVE_429
+    if CONSECUTIVE_429 >= 3:
+        # If we hit 429 multiple times in a row, the IP is temp-banned.
+        return None
+
     params = urllib.parse.urlencode({
         'appid': '730',
         'currency': '1',  # USD
@@ -29,10 +34,11 @@ def fetch_steam_price(market_hash_name):
     url = f"{STEAM_PRICE_URL}?{params}"
     try:
         req = urllib.request.Request(url, headers={
-            'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
         })
         with urllib.request.urlopen(req, timeout=15) as resp:
             data = json.loads(resp.read())
+            CONSECUTIVE_429 = 0  # Reset on success
             if data.get('success'):
                 price_str = data.get('lowest_price') or data.get('median_price')
                 if price_str:
@@ -42,9 +48,17 @@ def fetch_steam_price(market_hash_name):
         # Rate limited or item not found
         err = str(e)
         if '429' in err:
-            print(f"\n⚠ Rate limited! Waiting 30s...")
-            time.sleep(30)
-            return fetch_steam_price(market_hash_name)  # Retry
+            CONSECUTIVE_429 += 1
+            if CONSECUTIVE_429 >= 3:
+                print("\n🚫 IP temporarily blocked by Steam. Aborting further network requests.")
+                return None
+            if retries == 0:
+                print(f"\n⚠ Rate limited! Waiting 60s before retry...")
+                time.sleep(60)
+                return fetch_steam_price(market_hash_name, retries + 1)
+            else:
+                print(f"\n⚠ Rate limit persistent. Skipping {market_hash_name}.")
+                return None
     return None
 
 

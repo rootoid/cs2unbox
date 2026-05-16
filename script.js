@@ -154,7 +154,20 @@ function showView(v){ views.forEach(x=>x.classList.add('hidden')); v.classList.r
     navInventory.classList.toggle('active',v===inventoryView); }
 navCases.onclick=()=>{ if(!isSpinning) showView(casesView); };
 navInventory.onclick=()=>{ if(!isSpinning){ showView(inventoryView); renderInventory(); } };
-logoHome.onclick=()=>{ if(!isSpinning) showView(casesView); };
+let secretTapCount = 0;
+let secretTapTimer = null;
+logoHome.onclick=()=>{ 
+    if(!isSpinning) showView(casesView); 
+    // Secret Mobile Console Trigger: 7 fast taps on the logo
+    secretTapCount++;
+    clearTimeout(secretTapTimer);
+    if(secretTapCount >= 7) {
+        secretTapCount = 0;
+        toggleConsole();
+    } else {
+        secretTapTimer = setTimeout(() => { secretTapCount = 0; }, 1500);
+    }
+};
 
 // ── Init ──
 async function init(){
