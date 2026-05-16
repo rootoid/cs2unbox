@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CS2 Case Simulator - Unbox Skins</title>
+    <meta name="description" content="Premium CS2 case opening simulator with realistic odds, knives, gloves, and wear conditions.">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-effects">
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+        <div class="glow-orb orb-3"></div>
+    </div>
+
+    <header>
+        <div class="logo" id="logo-home">CS2<span>UNBOX</span></div>
+        <nav class="nav-tabs">
+            <button class="nav-tab active" data-view="cases-view" id="nav-cases">Cases</button>
+            <button class="nav-tab" data-view="inventory-view" id="nav-inventory">
+                Inventory <span class="inv-badge" id="inv-badge">0</span>
+            </button>
+        </nav>
+        <div class="balance-area">
+            <div class="balance">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M8 10h8M8 14h8"/></svg>
+                <span id="balance-display">$1,000.00</span>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- ==================== CASES VIEW ==================== -->
+        <section id="cases-view" class="view">
+            <div class="section-header">
+                <h1>Weapon Cases</h1>
+                <p>Select a case to inspect and unbox.</p>
+            </div>
+            <div class="loading-state" id="loading-cases">
+                <div class="loader"></div>
+                <span>Loading cases from database...</span>
+            </div>
+            <div class="cases-grid" id="cases-grid"></div>
+        </section>
+
+        <!-- ==================== CASE DETAIL VIEW ==================== -->
+        <section id="case-detail-view" class="view hidden">
+            <div class="detail-header">
+                <button id="back-to-cases" class="btn-ghost">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                    Back to Cases
+                </button>
+            </div>
+
+            <div class="case-hero">
+                <img id="detail-case-image" src="" alt="">
+                <div class="case-hero-info">
+                    <h2 id="detail-case-name"></h2>
+                    <div class="case-meta">
+                        <span class="meta-tag" id="detail-item-count"></span>
+                        <span class="meta-tag" id="detail-case-price"></span>
+                    </div>
+                    <button id="open-case-btn" class="btn-primary">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+                        <span>Open Case</span>
+                    </button>
+                    <div class="bulk-open-row">
+                        <span class="bulk-label">Bulk Open:</span>
+                        <button class="btn-bulk" data-qty="5">×5</button>
+                        <button class="btn-bulk" data-qty="10">×10</button>
+                        <button class="btn-bulk" data-qty="25">×25</button>
+                        <button class="btn-bulk" data-qty="50">×50</button>
+                        <button class="btn-bulk" data-qty="100">×100</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Odds Table -->
+            <div class="odds-section">
+                <h3>Drop Chances</h3>
+                <div class="odds-bars" id="odds-bars"></div>
+            </div>
+
+            <!-- Possible Items -->
+            <div class="possible-items-section">
+                <h3>Possible Items</h3>
+                <div class="possible-items-grid" id="possible-items-grid"></div>
+            </div>
+
+            <!-- Rare Special Items -->
+            <div class="possible-items-section" id="rare-section">
+                <h3>★ Rare Special Items (Knives & Gloves)</h3>
+                <div class="possible-items-grid" id="rare-items-grid"></div>
+            </div>
+        </section>
+
+        <!-- ==================== UNBOXING VIEW ==================== -->
+        <section id="unboxing-view" class="view hidden">
+            <div class="roulette-case-name" id="roulette-case-name"></div>
+
+            <div class="roulette-container" id="roulette-container">
+                <div class="roulette-line"></div>
+                <div class="roulette-window">
+                    <div id="roulette-track" class="roulette-track"></div>
+                </div>
+            </div>
+
+            <div class="unboxing-controls" id="unboxing-controls">
+                <button id="spin-again-btn" class="btn-primary hidden">Open Again</button>
+                <button id="back-from-unbox" class="btn-ghost hidden">Back to Case</button>
+            </div>
+
+            <!-- Win Reveal Overlay -->
+            <div id="win-overlay" class="win-overlay hidden">
+                <div class="win-card" id="win-card">
+                    <div class="win-glow" id="win-glow"></div>
+                    <div class="win-rarity" id="win-rarity">Covert</div>
+                    <h2 class="win-name" id="win-name">AWP | Asiimov</h2>
+                    <div class="win-wear" id="win-wear">Factory New</div>
+                    <img id="win-image" src="" alt="Won Item">
+                    <div class="win-price" id="win-price">$123.45</div>
+                    <div class="win-actions">
+                        <button id="sell-win-btn" class="btn-sell">Sell</button>
+                        <button id="collect-btn" class="btn-primary btn-collect">Keep</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk Results Overlay -->
+            <div id="bulk-overlay" class="win-overlay hidden">
+                <div class="bulk-card">
+                    <h2 class="bulk-title">Bulk Open Results</h2>
+                    <div class="bulk-summary" id="bulk-summary"></div>
+                    <div class="bulk-results-grid" id="bulk-results-grid"></div>
+                    <div class="bulk-actions">
+                        <button id="bulk-sell-all" class="btn-sell">Sell All</button>
+                        <button id="bulk-keep-all" class="btn-primary">Keep All</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== INVENTORY VIEW ==================== -->
+        <section id="inventory-view" class="view hidden">
+            <div class="section-header">
+                <h2>Your Inventory</h2>
+                <div class="inventory-summary">
+                    <div class="inv-stat">
+                        <span class="inv-stat-label">Items</span>
+                        <span class="inv-stat-value" id="inventory-count">0</span>
+                    </div>
+                    <div class="inv-stat">
+                        <span class="inv-stat-label">Total Value</span>
+                        <span class="inv-stat-value green" id="inventory-value">$0.00</span>
+                    </div>
+                    <button id="sell-all-btn" class="btn-sell-all" disabled>Sell All</button>
+                </div>
+            </div>
+            <div class="inventory-empty" id="inventory-empty">
+                <p>Your inventory is empty. Go open some cases!</p>
+            </div>
+            <div class="inventory-grid" id="inventory-grid"></div>
+        </section>
+    </main>
+
+    <!-- Easter Egg Console -->
+    <div id="cheat-console" class="cheat-console hidden">
+        <div class="cheat-header">
+            <span>Developer Console</span>
+            <button id="cheat-close" class="cheat-close-btn">×</button>
+        </div>
+        <div class="cheat-log" id="cheat-log"></div>
+        <div class="cheat-input-row">
+            <span class="cheat-prompt">&gt;</span>
+            <input type="text" id="cheat-input" class="cheat-input" autocomplete="off" spellcheck="false" placeholder="Type a command...">
+        </div>
+    </div>
+
+    <script src="script.js?v=2"></script>
+</body>
+</html>
